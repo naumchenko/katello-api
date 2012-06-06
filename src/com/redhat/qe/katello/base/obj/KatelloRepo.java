@@ -45,7 +45,7 @@ public class KatelloRepo {
 	public static final String REG_REPO_INFO = ".*Id:\\s+\\d+.*Name:\\s+%s.*Url:\\s+%s.*Last Sync:\\s+%s.*Progress:\\s+%s.*GPG key:\\s*+%s.*";
 	public static final String REG_REPO_STATUS = ".*Package Count:\\s+\\d+.*Last Sync:\\s+%s.*Sync State:\\s+%s.*";
 	public static final String REG_FILTER_LIST = ".*\\s+%s.*\\s+%s";
-	public static final String REG_REPO_LIST = ".*Id:\\s+\\d+.*Name:\\s+%s.*Package Count:\\s+\\d+.*Last Sync:\\s+%s.*";
+	public static final String REG_REPO_LIST = ".*Id:\\s+\\d+.*Name:\\s+%s.*Package Count:\\s+\\d+.*";
 	
 	public static final String REG_REPO_LASTSYNC = "\\d{4}/\\d{2}/\\d{2}\\s\\d{2}:\\d{2}:\\d{2}";
 
