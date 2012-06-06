@@ -40,7 +40,7 @@ public class KatelloProduct {
 	public static final String OUT_NOT_SYNCHRONIZED_YET = 
 			"Product '%s' was not synchronized yet";
 	public static final String ERR_PROMOTE_NOREPOS = 
-			"Couldn't find Product with cp_id = ";
+			" hasn't any repositories";
 	public static final String ERR_GPGKEY_NOTFOUND = 
 			"Couldn't find GpgKey with name = %s";
 
