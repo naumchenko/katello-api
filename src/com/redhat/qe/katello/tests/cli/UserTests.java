@@ -111,8 +111,7 @@ public class UserTests extends KatelloCliTestScript{
 		String username = "user-" + uniqueID;
 		String userpass = "password";
 		String usermail = username + "@localhost";
-		KatelloUser usr = new KatelloUser(username, usermail, userpass, false,
-				this.organization, this.env);
+		KatelloUser usr = new KatelloUser(username, usermail, userpass, false);
 		res = usr.cli_create();
 		Assert.assertTrue(res.getExitCode().intValue() == 0,
 				"Check - return code (" + KatelloUser.CMD_CREATE + ")");
