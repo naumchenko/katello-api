@@ -133,8 +133,10 @@ public class OrgTests extends KatelloCliTestScript{
 		res = org.subscriptions();
 		Assert.assertTrue(res.getExitCode() == 0, "Check - return code (org subscriptions)"); // check: ($? is 0)
 		
-		Assert.assertTrue(getOutput(res).trim().contains(String.format(KatelloOrg.OUT_ORG_SUBSCR, productName)), "Check - Subscriptions contains " + productName);
-		Assert.assertTrue(getOutput(res).trim().contains(String.format(KatelloOrg.OUT_ORG_SUBSCR, productName1)), "Check - Subscriptions contains " + productName1);
+		Assert.assertTrue(getOutput(res).trim().replaceAll("\\n", "").matches(String.format(KatelloOrg.REG_ORG_SUBSCR, productName)),
+				"Check - Subscriptions contains " + productName);
+		Assert.assertTrue(getOutput(res).trim().replaceAll("\\n", "").matches(String.format(KatelloOrg.REG_ORG_SUBSCR, productName)),
+				"Check - Subscriptions contains " + productName1);
 	}
 	
 	@Test(description = "Create org - existing")
