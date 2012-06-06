@@ -103,7 +103,7 @@ public class PackageTests extends KatelloCliTestScript {
 		
 	}
 	
-	@Test(description="package search", groups = {"cli-packages"}, enabled=true)
+	@Test(description="package search", groups = {"cli-packages"}, enabled=false) // Not for recent CFSE 1.0; 1.0.1
 	public void test_packageSearch() {
 		
 		KatelloPackage pack = new KatelloPackage(null, null, org_name, product_name, repo_name, null);
