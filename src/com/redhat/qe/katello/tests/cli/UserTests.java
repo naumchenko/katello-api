@@ -104,7 +104,7 @@ public class UserTests extends KatelloCliTestScript{
 		}
 	}
 	
-	@Test(description = "delete users - for some org provided", enabled = true)
+	@Test(description = "delete users - for some org provided", enabled = false) // Default org is not supported yet: CFSE 1.0;1.0.1 
 	public void test_DeleteUserOrg() {
 		SSHCommandResult res;
 		String uniqueID = KatelloTestScript.getUniqueID();

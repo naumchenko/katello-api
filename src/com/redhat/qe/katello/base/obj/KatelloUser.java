@@ -36,7 +36,7 @@ public class KatelloUser {
 	public static final String OUT_UNASSIGN_ROLE =
             "User \'%s\' unassigned from role \'%s\'";
 	public static final String OUT_FIND_USER_ERROR =
-			"Could not find user [ %s ]";
+			"Could not fing user [ %s ]"; // syntax error - to be fixed on CFSE 1.0;1.0.1 
 	
 	public static final String REG_USER_LIST = ".*Id:\\s+\\d+.*Username:\\s+%s.*Email:\\s+%s.*";
 	public static final String REG_USER_ROLE_LIST = ".*\\d+\\s+%s.*";
