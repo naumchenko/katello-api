@@ -3,19 +3,18 @@ package com.redhat.qe.katello.base.obj;
 import java.util.logging.Logger;
 import javax.management.Attribute;
 import org.codehaus.jackson.annotate.JsonProperty;
-
 import com.redhat.qe.katello.base.KatelloCli;
 import com.redhat.qe.katello.base.KatelloCliTestScript;
 import com.redhat.qe.katello.common.KatelloUtils;
 import com.redhat.qe.tools.SSHCommandResult;
 
 public class KatelloOrg extends _KatelloObject{
-    protected static Logger log = Logger.getLogger(KatelloOrg.class.getName());
-    private static String defaultOrg = null;
+	protected static Logger log = Logger.getLogger(KatelloOrg.class.getName());
+	private static String defaultOrg = null;
 
 	// ** ** ** ** ** ** ** Public constants
 	public static final String DEFAULT_ORG = "ACME_Corporation";
-	
+
 	public static final String CLI_CMD_CREATE = "org create";
 	public static final String CLI_CMD_INFO = "org info";
 	public static final String CLI_CMD_LIST = "org list";
@@ -23,13 +22,13 @@ public class KatelloOrg extends _KatelloObject{
 	public static final String CMD_UEBERCERT = "org uebercert";
 	public static final String CMD_DELETE = "org delete";
 	public static final String CMD_UPDATE = "org update";
-	
+
 	public static final String API_CMD_INFO = "/organizations/%s";
-	
+
 	public static final String OUT_CREATE = 
 			"Successfully created org [ %s ]";
 	public static final String ERR_ORG_EXISTS = 
-			"Validation failed: Name has already been taken, Label has already been taken, Organization Names and labels must be unique across all organizations";  //"Name has already been taken, Label has already been taken, Organization Names and labels must be unique across all organizations";                                     //"Validation failed: Name has already been taken, Label has already been taken";
+			"Validation failed: Name has already been taken";
 	public static final String ERR_NAME_INVALID = 
 			"Validation failed: Name cannot contain characters other than alpha numerals, space,'_', '-'.";
 	public static final String ERR_ORG_NOTFOUND = 
@@ -38,68 +37,68 @@ public class KatelloOrg extends _KatelloObject{
 			"Validation failed: Name has already been taken";
 	public static final String ERR_ORG_LABEL_EXISTS = 
 			"Validation failed: Organization Names and labels must be unique across all organizations";                //"Validation failed: Label has already been taken";
-	
+
 	public static final String REG_ORG_LIST = ".*Id\\s*:\\s+\\d+.*Name\\s*:\\s+%s.*Description\\s*:\\s+%s.*";
 	public static final String REG_ORG_INFO = ".*Id\\s*:\\s+\\d+.*Name\\s*:\\s+%s.*Description\\s*:\\s+%s.*";
-	
+
 	public static final String OUT_ORG_SUBSCR = ".*Subscription\\s*:\\s*%s.*";
-	
+
 	// ** ** ** ** ** ** ** Class members
 	public String name;
 	public String description;
 	public String label;
 	private Long id;
 	private String cpKey;
-	
+
 	public KatelloOrg(){super();}
-	
+
 	public KatelloOrg(String pName, String pDesc){
 		this.name = pName;
 		this.description = pDesc;
 	}
-	
+
 	protected KatelloOrg(Long id, String name, String description) {
-	    this(name, description);
-	    this.id = id;
+		this(name, description);
+		this.id = id;
 	}
-	
+
 	public KatelloOrg(String name, String description, String label) {
-	    this(name, description);
-	    this.label = label;
+		this(name, description);
+		this.label = label;
 	}
 
 	public Long getId() {
-	    return id;
+		return id;
 	}
-	
+
 	public void setId(Long id) {
-	    this.id = id;
+		this.id = id;
 	}
-	
+
 	public String getName() {
-	    return name;
+		return name;
 	}
-	
+
 	public void setName(String name) {
-	    this.name = name;
+		this.name = name;
 	}
-	
+
 	@JsonProperty("cp_key")
 	public String getCpKey() {
-	    return cpKey;
+		return cpKey;
 	}
 
 	@JsonProperty("cp_key")
 	public void setCpKey(String cpKey) {
-	    this.cpKey = cpKey;
+		this.cpKey = cpKey;
 	}
-	
+
 	public String getLabel() {
-	    return label;
+		return label;
 	}
-	
+
 	public void setLabel(String label) {
-	    this.label = label;
+		this.label = label;
 	}
 
 	public SSHCommandResult cli_create(){		
@@ -109,18 +108,18 @@ public class KatelloOrg extends _KatelloObject{
 		opts.add(new Attribute("label", this.label));
 		return run(CLI_CMD_CREATE);
 	}
-	
+
 	public SSHCommandResult cli_info(){
 		opts.clear();
 		opts.add(new Attribute("name", this.name));
 		return run(CLI_CMD_INFO);
 	}
-	
+
 	public SSHCommandResult cli_list(){
 		opts.clear();
 		return run(CLI_CMD_LIST+" -v");
 	}
-		
+
 	public SSHCommandResult subscriptions(){
 		opts.clear();
 		opts.add(new Attribute("name", this.name));
@@ -138,7 +137,7 @@ public class KatelloOrg extends _KatelloObject{
 		opts.add(new Attribute("name", this.name));
 		return run(CMD_DELETE);
 	}
-	
+
 	public SSHCommandResult update(String new_description){
 		opts.clear();
 		opts.add(new Attribute("name", this.name));
@@ -155,7 +154,7 @@ public class KatelloOrg extends _KatelloObject{
 			defaultOrg = DEFAULT_ORG;
 		return defaultOrg;
 	}
-	
+
 	public static String getPoolId(String orgName, String productName){
 		SSHCommandResult res = new KatelloOrg(orgName, null).subscriptions(); // all subscriptinos
 		String outBlock = KatelloCli.grepOutBlock(
