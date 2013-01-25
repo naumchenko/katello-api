@@ -25,12 +25,19 @@ public class SetupServers extends KatelloCliTestScript {
 			if (isDeltacloud) {
 				server = KatelloUtils.getDeltaCloudServer(1);
 				server_name = server.getHostName();
-
-				client = KatelloUtils.getDeltaCloudClient(server_name, 1);
-				client_name = client.getHostName();
-
-				System.setProperty("katello.server.hostname", server_name);
-				System.setProperty("katello.client.hostname", client_name);
+				System.setProperty("katello.server.hostname", server.getHostName());
+				if (System.getProperty("katello.product", "katello").equals("sam") || System.getProperty("katello.product", "katello").equals("headpin")) 
+				{
+					System.setProperty("katello.client.hostname", server.getHostName());
+				} 
+				else 
+				{
+					
+					client = KatelloUtils.getDeltaCloudClient(server_name, 1);
+					client_name = client.getHostName();
+					System.setProperty("katello.client.hostname", client.getHostName());
+					
+				}
 			}
 		}
 
@@ -38,7 +45,10 @@ public class SetupServers extends KatelloCliTestScript {
 		public void tearDown() {
 			if (isDeltacloud) {
 				KatelloUtils.destroyDeltaCloudMachine(server);
-				KatelloUtils.destroyDeltaCloudMachine(client);
+				if (System.getProperty("katello.product", "katello").equals("katello") || System.getProperty("katello.product", "katello").equals("cfse")) 
+				{	
+					KatelloUtils.destroyDeltaCloudMachine(client);
+				}
 			}
 		}
 
