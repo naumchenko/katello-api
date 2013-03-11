@@ -209,29 +209,30 @@ public class OrgTests extends KatelloCliTestScript{
 	
 	@Test(description = "Attempt to upload an already imported manifest in a different ORG",groups={"cfse-cli","headpin-cli"})
 	public void test_UploadManifestDiffOrg(){
-		
 		String uniqueID = KatelloUtils.getUniqueID();
 		String org_name = "Raleigh-" + uniqueID;
 		String diff_org_name = "Durham-" + uniqueID;
 		KatelloOrg org = new KatelloOrg(org_name,null);
-		orgs.add(org); // as it's wrong to make the org delete after assertions: if assert fails, code is not getting executed anymore :P
-		exec_result = org.cli_create();
-		Assert.assertTrue(exec_result.getExitCode() == 0, "Check - return code");
-		KatelloProvider provider = new KatelloProvider(KatelloProvider.PROVIDER_REDHAT,org_name,null,null);
-		exec_result = provider.import_manifest("/tmp"+File.separator+MANIFEST_STACK, new Boolean(true));
-		Assert.assertTrue(exec_result.getExitCode() == 0, "Check - return code");
 		KatelloOrg diff_org = new KatelloOrg(diff_org_name,null);
-		orgs.add(diff_org); // same here
-		exec_result = diff_org.cli_create();
-		Assert.assertTrue(exec_result.getExitCode() == 0, "Check - return code");
-		provider = new KatelloProvider(KatelloProvider.PROVIDER_REDHAT,diff_org_name,null,null);
-		exec_result = provider.import_manifest("/tmp"+File.separator+MANIFEST_STACK, new Boolean(true));
-		Assert.assertTrue(exec_result.getExitCode() == 144, "Check - return code");
-		Assert.assertTrue(getOutput(exec_result).contains(String.format("This subscription management application has already been imported by another owner")),"Check - return string");
-		exec_result	= org.delete();
-		Assert.assertTrue(exec_result.getExitCode() == 0, "Check - return code");
-		exec_result = diff_org.delete();
-		Assert.assertTrue(exec_result.getExitCode() == 0, "Check - return code");
+		try{
+			exec_result = org.cli_create();
+			Assert.assertTrue(exec_result.getExitCode() == 0, "Check - return code");
+			KatelloProvider provider = new KatelloProvider(KatelloProvider.PROVIDER_REDHAT,org_name,null,null);
+			exec_result = provider.import_manifest("/tmp"+File.separator+MANIFEST_STACK, new Boolean(true));
+			Assert.assertTrue(exec_result.getExitCode() == 0, "Check - return code");
+			
+			exec_result = diff_org.cli_create();
+			Assert.assertTrue(exec_result.getExitCode() == 0, "Check - return code");
+			provider = new KatelloProvider(KatelloProvider.PROVIDER_REDHAT,diff_org_name,null,null);
+			exec_result = provider.import_manifest("/tmp"+File.separator+MANIFEST_STACK, new Boolean(true));
+			Assert.assertTrue(exec_result.getExitCode() == 144, "Check - return code");
+			Assert.assertTrue(getOutput(exec_result).contains(String.format("This subscription management application has already been imported by another owner")),"Check - return string");
+		}finally{
+			exec_result	= org.delete();
+			Assert.assertTrue(exec_result.getExitCode() == 0, "Check - return code");
+			exec_result = diff_org.delete();
+			Assert.assertTrue(exec_result.getExitCode() == 0, "Check - return code");
+		}
 	}
 	
 	@Test(description = "Attempt to upload an already imported manifest in the same ORG",groups={"cfse-cli","headpin-cli"})
@@ -241,18 +242,20 @@ public class OrgTests extends KatelloCliTestScript{
 		String org_name = "Raleigh-" + uniqueID;
 		
 		KatelloOrg org = new KatelloOrg(org_name,null);
-		exec_result = org.cli_create();
-		orgs.add(org);
-		Assert.assertTrue(exec_result.getExitCode() == 0, "Check - return code");
-		KatelloProvider provider = new KatelloProvider(KatelloProvider.PROVIDER_REDHAT,org_name,null,null);
-		exec_result = provider.import_manifest("/tmp"+File.separator+MANIFEST_STACK, new Boolean(true));
-		Assert.assertTrue(exec_result.getExitCode() == 0, "Check - return code");
-		Assert.assertTrue(getOutput(exec_result).contains(String.format("Manifest imported")),"Check - return string");
-		exec_result = provider.import_manifest("/tmp"+File.separator+MANIFEST_STACK, new Boolean(true));
-		Assert.assertTrue(exec_result.getExitCode() == 144, "Check - return code");
-		Assert.assertTrue(getOutput(exec_result).contains(String.format("Import is the same as existing data")),"Check - return string");
-		exec_result	= org.delete();
-		Assert.assertTrue(exec_result.getExitCode() == 0, "Check - return code");
+		try{
+			exec_result = org.cli_create();
+			Assert.assertTrue(exec_result.getExitCode() == 0, "Check - return code");
+			KatelloProvider provider = new KatelloProvider(KatelloProvider.PROVIDER_REDHAT,org_name,null,null);
+			exec_result = provider.import_manifest("/tmp"+File.separator+MANIFEST_STACK, new Boolean(true));
+			Assert.assertTrue(exec_result.getExitCode() == 0, "Check - return code");
+			Assert.assertTrue(getOutput(exec_result).contains(String.format("Manifest imported")),"Check - return string");
+			exec_result = provider.import_manifest("/tmp"+File.separator+MANIFEST_STACK, new Boolean(true));
+			Assert.assertTrue(exec_result.getExitCode() == 144, "Check - return code");
+			Assert.assertTrue(getOutput(exec_result).contains(String.format("Import is the same as existing data")),"Check - return string");
+		}finally{
+			exec_result	= org.delete();
+			Assert.assertTrue(exec_result.getExitCode() == 0, "Check - return code");
+		}
 	}
 	
 	private void assert_orgInfo(KatelloOrg org){
