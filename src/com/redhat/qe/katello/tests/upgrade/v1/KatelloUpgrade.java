@@ -86,12 +86,15 @@ public class KatelloUpgrade extends KatelloCliTestScript{
 			dependsOnGroups={TNG_PRE_UPGRADE}, 
 			groups={TNG_UPGRADE})
 	public void runUpgrade(){
-		KatelloUtils.sshOnServer("yes | katello-upgrade"); // TODO using --log=LOG_FILE option. will change to -y after
+		SSHCommandResult res;
+		res = KatelloUtils.sshOnServer("yes | katello-upgrade"); // TODO using --log=LOG_FILE option. will change to -y after
+		Assert.assertTrue(res.getExitCode().intValue()==0, "Check katello upgrade went fine");
 		if(KATELLO_PRODUCT.equals("cfse"))
 			KatelloUtils.stopKatello();
 		else
 			KatelloUtils.stopHeadpin();
-		KatelloUtils.sshOnServer("katello-configure --answer-file=/etc/katello/katello-configure.conf -b");
+		res = KatelloUtils.sshOnServer("katello-configure --answer-file=/etc/katello/katello-configure.conf -b");
+		Assert.assertTrue(res.getExitCode().intValue()==0, "Check katello configure succeed");
 		if(KATELLO_PRODUCT.equals("sam")) // YES: to be run twice for SAM 1.2
 			KatelloUtils.sshOnServer("katello-configure --answer-file=/etc/katello/katello-configure.conf -b");
 		KatelloUtils.sshOnServer("sed -i 's/5674/5671/g' /etc/gofer/plugins/katelloplugin.conf"); // even if it will fail for sam - who cares ;)
