@@ -62,6 +62,7 @@ public class VirtualSubscriptions implements KatelloConstants {
 		res = KatelloUtils.sshOnClient(clients[0], "rpm -q telnet");
 		Assert.assertTrue(res.getExitCode().intValue() != 0, "exit(0) - should not be able to instal package on " + clients[0]);
 		KatelloUtils.sshOnServer("iptables -I INPUT 1 -p tcp -m state --state NEW -m tcp --dport 8088 -j ACCEPT");
+		KatelloUtils.sshOnServer("service iptables save");
 	}
 	
 	@Test(description="init object unique names", 
