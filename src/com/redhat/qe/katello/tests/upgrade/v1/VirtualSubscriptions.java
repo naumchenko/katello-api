@@ -50,6 +50,19 @@ public class VirtualSubscriptions implements KatelloConstants {
 		log.finest("put in socket.facts \"1\" - scenario here considers having all clients with 1 CPU socket");
 		KatelloUtils.sshOnClient(clients[0],"echo '{\"cpu.cpu_socket(s)\":\"1\"}' > /etc/rhsm/facts/sockets.facts");
 		KatelloUtils.sshOnClient(clients[1],"echo '{\"cpu.cpu_socket(s)\":\"1\"}' > /etc/rhsm/facts/sockets.facts");
+		
+		SSHCommandResult res;
+		KatelloUtils.sshOnClient(clients[0], "yum erase -y telnet");
+		KatelloUtils.sshOnClient(clients[0], "sed -i 's/enabled=1/enabled=0/' /etc/yum.repos.d/beaker*repo");
+		KatelloUtils.sshOnClient(clients[0], "rm -f /etc/sysconfig/rhn/systemid*");
+		KatelloUtils.sshOnClient(clients[0], "yum clean all");
+		res = KatelloUtils.sshOnClient(clients[0], "yum repolist");
+		Assert.assertTrue(res.getStdout().contains("repolist: 0"), "All repos should be disabled on client " + clients[0]);
+		KatelloUtils.sshOnClient(clients[0], "yum install -y telnet");
+		res = KatelloUtils.sshOnClient(clients[0], "rpm -q telnet");
+		Assert.assertTrue(res.getExitCode().intValue() != 0, "exit(0) - should not be able to instal package on " + clients[0]);
+		KatelloUtils.sshOnServer("iptables -I INPUT 1 -p tcp -m state --state NEW -m tcp --dport 8088 -j ACCEPT");
+		KatelloUtils.sshOnServer("service iptables save");
 	}
 	
 	@Test(description="init object unique names", 
@@ -199,9 +212,21 @@ public class VirtualSubscriptions implements KatelloConstants {
 				KatelloCliTestScript.sgetOutput(res).contains(String.format(KatelloSystem.ERR_POOL_IS_RESTRICTED_VERSION_1_1, poolVirt)), 
 				"stderr - pool is restricted");
 	}
-	
+
+	@Test(description="unregister client[0]. Virtual pool should gone! Check AK too.", 
+			dependsOnGroups={TNG_PRE_UPGRADE, TNG_UPGRADE},
+			groups={TNG_POST_UPGRADE})
+	public void consumeContentOnClients() {
+		SSHCommandResult res;		
+		res = KatelloUtils.sshOnClient(clients[0], "yum install -y telnet");
+		Assert.assertTrue(res.getExitCode().intValue()==0, "exit(0) - instal package on " + clients[0]);
+		res = KatelloUtils.sshOnClient(clients[0], "rpm -q telnet");
+		Assert.assertTrue(res.getExitCode().intValue()==0, "Check - return code (rpm -q telnet)");
+		Assert.assertTrue(res.getStdout().trim().contains("telnet-"));
+	}
 	
 	@Test(description="unregister client[0]. Virtual pool should gone! Check AK too.", 
+			dependsOnMethods={"consumeContentOnClients"},
 			dependsOnGroups={TNG_PRE_UPGRADE, TNG_UPGRADE},
 			groups={TNG_POST_UPGRADE})
 	public void unregisterRhelClient(){
