@@ -26,7 +26,7 @@ public class OrgTests extends KatelloCliTestScript{
 	String uid = KatelloUtils.getUniqueID();
 	SSHCommandResult exec_result;
 	
-	@BeforeClass(description="Generate unique objects")
+	@BeforeClass(description="Generate unique objects", alwaysRun=true)
 	public void setUp() {
 		KatelloOrg org = new KatelloOrg("FOO"+uid,"Package tests", "BAR"+uid);
 		exec_result = org.cli_create();
