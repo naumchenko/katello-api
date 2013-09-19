@@ -1,6 +1,8 @@
 package com.redhat.qe.katello.tests.upgrade.v1;
 
 import java.util.logging.Logger;
+
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.Test;
 import com.redhat.qe.Assert;
 import com.redhat.qe.katello.base.KatelloCliTestBase;
@@ -971,9 +973,9 @@ public class ScenOrgs implements KatelloConstants {
 		Assert.assertTrue(res.getExitCode() == 0, "Check - return code (delete distributor)");
 	}
 	
-	@Test(description="Deleted created orgs from upgrade scenarios which contains manifests",
-			dependsOnGroups={TNG_POST_UPGRADE})
-	public void removeOrgs() {
+	@AfterClass(description="Deleted created orgs from upgrade scenarios which contains manifests",
+			alwaysRun=true)
+	public void tearDown() {
 		new KatelloOrg(null, _org, null).delete();
 		new KatelloOrg(null, _del_org[0], null).delete();
 		new KatelloOrg(null, _del_org[1], null).delete();
