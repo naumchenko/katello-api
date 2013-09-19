@@ -782,13 +782,13 @@ public class ScenOrgs implements KatelloConstants {
 		SSHCommandResult res = key.delete();
 		Assert.assertTrue(res.getExitCode()==0, "Check - exit code");
 
-		KatelloSystem sys = new KatelloSystem(null, _sys_act_key[0], _org_act_key[0], _env_act_key[0]);
+		KatelloSystem sys = new KatelloSystem(null, _sys_act_key[0], _org_act_key[0], null);
 		res = sys.list();
 		Assert.assertTrue(res.getExitCode()==0, "Check - exit code");
 		Assert.assertTrue(res.getStdout().contains(_sys_act_key[0]), "Check the system is still registered");
 
 		//Remove the system after upgrade
-		sys = new KatelloSystem(null, _sys_act_key[1], _org_act_key[1], _env_act_key[1]);
+		sys = new KatelloSystem(null, _sys_act_key[1], _org_act_key[1], null);
 		res = sys.unregister();
 		Assert.assertTrue(res.getExitCode()==0, "Check - exit code");
 		Assert.assertFalse(res.getStdout().contains(_sys_act_key[1]), "System removed succesfully");
