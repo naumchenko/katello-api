@@ -1,6 +1,8 @@
 package com.redhat.qe.katello.tests.upgrade.v1;
 
 import java.util.logging.Logger;
+
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.Test;
 import com.redhat.qe.Assert;
 import com.redhat.qe.katello.base.KatelloCliTestBase;
@@ -780,13 +782,13 @@ public class ScenOrgs implements KatelloConstants {
 		SSHCommandResult res = key.delete();
 		Assert.assertTrue(res.getExitCode()==0, "Check - exit code");
 
-		KatelloSystem sys = new KatelloSystem(null, _sys_act_key[0], _org_act_key[0], _env_act_key[0]);
+		KatelloSystem sys = new KatelloSystem(null, _sys_act_key[0], _org_act_key[0], null);
 		res = sys.list();
 		Assert.assertTrue(res.getExitCode()==0, "Check - exit code");
 		Assert.assertTrue(res.getStdout().contains(_sys_act_key[0]), "Check the system is still registered");
 
 		//Remove the system after upgrade
-		sys = new KatelloSystem(null, _sys_act_key[1], _org_act_key[1], _env_act_key[1]);
+		sys = new KatelloSystem(null, _sys_act_key[1], _org_act_key[1], null);
 		res = sys.unregister();
 		Assert.assertTrue(res.getExitCode()==0, "Check - exit code");
 		Assert.assertFalse(res.getStdout().contains(_sys_act_key[1]), "System removed succesfully");
@@ -1148,9 +1150,9 @@ public class ScenOrgs implements KatelloConstants {
 		Assert.assertTrue(res.getExitCode() == 0, "Check - return code (delete distributor)");
 	}
 	
-	@Test(description="Deleted created orgs from upgrade scenarios which contains manifests",
-			dependsOnGroups={TNG_POST_UPGRADE})
-	public void removeOrgs() {
+	@AfterClass(description="Deleted created orgs from upgrade scenarios which contains manifests",
+			alwaysRun=true)
+	public void tearDown() {
 		new KatelloOrg(null, _org, null).delete();
 		new KatelloOrg(null, _del_org[0], null).delete();
 		new KatelloOrg(null, _del_org[1], null).delete();
