@@ -54,12 +54,15 @@ public class ScenOrgs implements KatelloConstants {
 	String _newuser;
 	String _newsystem;
 	String _poolRhel;
+	String _poolRhel2;
+	String _poolRhel3;
 	String _keyname1;
 	String _keyname2;
 	String[] _act_key = new String[2];
 	String[] _org_act_key = new String[2];
 	String[] _env_act_key = new String[2];
 	String[] _sys_act_key = new String[2];
+	String[] _sys_act_key_ID = new String[2];
 	String[] _org_default_info= new String[2];
 	String[] _keyname= new String[2];
 	String[] _permorg = new String[3];
@@ -84,10 +87,22 @@ public class ScenOrgs implements KatelloConstants {
 		_org = "torg"+_uid;
 		_user = "tuser"+_uid;
 		_newuser = "newuser" + _uid;
+		_multuser[0] = "mult-user0-"+ _uid;
+		_multuser[1] = "mult-user1-"+ _uid;
+		_multuser[2] = "mult-user2-"+ _uid;
+		_multuser[3] = "mult-user3-"+ _uid;
+		_multuser[4] = "mult-user4-"+ _uid;
+		_user_default_org = "user-org-default" + _uid;
 		String ldap_type = System.getProperty("ldap.server.type", "");		
 		if ("posix".equals(ldap_type)) {
-			_user = "omaciel";
-			_newuser = "sthirugn";
+			_user = "gszasz";
+			_newuser = "sloranz";
+			_multuser[0] = "jlaska";
+			_multuser[1] = "imcleod";
+			_multuser[2] = "psharma";
+			_multuser[3] = "rananda";
+			_multuser[4] = "rlandy";
+			_user_default_org = "wadkins";
 		} else if ("free_ipa".equals(ldap_type) || "active_directory".equals(ldap_type)) {
 			_user = "admin-user2";
 			_newuser = "admin-user3";
@@ -207,7 +222,9 @@ public class ScenOrgs implements KatelloConstants {
 		
 		KatelloSystem sys = new KatelloSystem(null, _del_system, _org, _env_1);
 		sys.runOn(SetupServers.client_name);
+		KatelloUtils.sshOnClient(SetupServers.client_name, "subscription-manager clean");
 		res = sys.rhsm_registerForce();
+		KatelloUtils.sshOnClient(SetupServers.client_name, "subscription-manager clean");
 		Assert.assertTrue(res.getExitCode().intValue()==0, "exit(0) - rhsm register");
 		res = sys.rhsm_identity();
 		String uuid1 = KatelloUtils.grepCLIOutput("Current identity is", res.getStdout());
@@ -215,6 +232,7 @@ public class ScenOrgs implements KatelloConstants {
 		
 		sys = new KatelloSystem(null, _del_system2, _org, _env_2);
 		sys.runOn(SetupServers.client_name2);
+		KatelloUtils.sshOnClient(SetupServers.client_name2, "subscription-manager clean");
 		res = sys.rhsm_registerForce();
 		Assert.assertTrue(res.getExitCode().intValue()==0, "exit(0) - rhsm register");
 		res = sys.rhsm_identity();
@@ -233,6 +251,7 @@ public class ScenOrgs implements KatelloConstants {
 		
 		sys = new KatelloSystem(null, _system, _org, _env_1);
 		sys.runOn(SetupServers.client_name);
+		KatelloUtils.sshOnClient(SetupServers.client_name, "subscription-manager clean");
 		res = sys.rhsm_registerForce(_akey);
 		Assert.assertTrue(res.getExitCode().intValue()==0, "exit(0) - rhsm register (activationkey)");
 		res = sys.rhsm_subscribe(_poolRhel);
@@ -240,6 +259,7 @@ public class ScenOrgs implements KatelloConstants {
 		
 		sys = new KatelloSystem(null, _system2, _org, _env_2);
 		sys.runOn(SetupServers.client_name2);
+		KatelloUtils.sshOnClient(SetupServers.client_name2, "subscription-manager clean");
 		res = sys.rhsm_registerForce(_akey2);
 		Assert.assertTrue(res.getExitCode().intValue()==0, "exit(0) - rhsm register (activationkey)");
 		res = sys.rhsm_subscribe(_poolRhel);
@@ -247,6 +267,7 @@ public class ScenOrgs implements KatelloConstants {
 		
 		sys = new KatelloSystem(null, _system3, _org, _env_3);
 		sys.runOn(SetupServers.client_name3);
+		KatelloUtils.sshOnClient(SetupServers.client_name3, "subscription-manager clean");
 		res = sys.rhsm_registerForce();
 		Assert.assertTrue(res.getExitCode().intValue()==0, "exit(0) - rhsm register (activationkey)");
 		res = sys.rhsm_subscribe(_poolRhel);
@@ -314,9 +335,7 @@ public class ScenOrgs implements KatelloConstants {
 
 	@Test(description="Multiple Users - Delete some of them", 
 			groups={TNG_PRE_UPGRADE})
-	public void addMultipleUsers(){
-		String uid = KatelloUtils.getUniqueID(); 
-		_multuser[0] = "mult-user0-"+ uid;
+	public void addMultipleUsers(){ 
 		KatelloUser user = new KatelloUser(null, _multuser[0], 
 				KatelloUser.DEFAULT_USER_EMAIL, System.getProperty("katello.admin.password", KatelloUser.DEFAULT_ADMIN_PASS), false);
 		SSHCommandResult res = user.cli_create();
@@ -324,7 +343,6 @@ public class ScenOrgs implements KatelloConstants {
 		res = user.delete();
 		Assert.assertTrue(res.getExitCode()==0, "Check - exit code");
 
-		_multuser[1] = "mult-user1-"+ uid;
 		user = new KatelloUser(null, _multuser[1], 
 				KatelloUser.DEFAULT_USER_EMAIL, System.getProperty("katello.admin.password", KatelloUser.DEFAULT_ADMIN_PASS), false);
 		res = user.cli_create();
@@ -332,19 +350,16 @@ public class ScenOrgs implements KatelloConstants {
 		res = user.delete();
 		Assert.assertTrue(res.getExitCode()==0, "Check - exit code");
 
-		_multuser[2] = "mult-user2-"+ uid;
 		user = new KatelloUser(null, _multuser[2], 
 				KatelloUser.DEFAULT_USER_EMAIL, System.getProperty("katello.admin.password", KatelloUser.DEFAULT_ADMIN_PASS), false);
 		res = user.cli_create();
 		Assert.assertTrue(res.getExitCode()==0, "Check - exit code");
 
-		_multuser[3] = "mult-user3-"+ uid;
 		user = new KatelloUser(null, _multuser[3], 
 				KatelloUser.DEFAULT_USER_EMAIL, System.getProperty("katello.admin.password", KatelloUser.DEFAULT_ADMIN_PASS), false);
 		res = user.cli_create();
 		Assert.assertTrue(res.getExitCode()==0, "Check - exit code");
 
-		_multuser[4] = "mult-user4-"+ uid;
 		user = new KatelloUser(null, _multuser[4], 
 				KatelloUser.DEFAULT_USER_EMAIL, System.getProperty("katello.admin.password", KatelloUser.DEFAULT_ADMIN_PASS), false);
 		res = user.cli_create();
@@ -636,7 +651,6 @@ public class ScenOrgs implements KatelloConstants {
 		SSHCommandResult res = orgDefault.cli_create();
 		Assert.assertTrue(res.getExitCode()==0, "Check - exit code");
 
-		_user_default_org = "user-org-default" + uid;
 		userOrgDefault = new KatelloUser(null, _user_default_org, 
 				KatelloUser.DEFAULT_USER_EMAIL, System.getProperty("katello.admin.password", KatelloUser.DEFAULT_ADMIN_PASS), false , _org_default , KatelloEnvironment.LIBRARY);
 		res = userOrgDefault.cli_create();
@@ -717,16 +731,23 @@ public class ScenOrgs implements KatelloConstants {
 		res = org.subscriptions();
 		Assert.assertTrue(res.getExitCode().intValue()==0, "exit(0) - org subscriptions");
 		// getting poolid could vary - might be need to make switch case here for different versions...
-		_poolRhel = KatelloUtils.grepCLIOutput("ID", KatelloCliTestBase.sgetOutput(res));
-		if (_poolRhel == null || _poolRhel.isEmpty()) {
-			_poolRhel = KatelloUtils.grepCLIOutput("Id", KatelloCliTestBase.sgetOutput(res));
+		_poolRhel2 = KatelloUtils.grepCLIOutput("ID", KatelloCliTestBase.sgetOutput(res));
+		if (_poolRhel2 == null || _poolRhel2.isEmpty()) {
+			_poolRhel2 = KatelloUtils.grepCLIOutput("Id", KatelloCliTestBase.sgetOutput(res));
 		}
 
 		KatelloSystem sys = new KatelloSystem(null, _sys_act_key[0], _org_act_key[0], _env_act_key[0]);
 		sys.runOn(SetupServers.client_name);
+		KatelloUtils.sshOnClient(SetupServers.client_name, "subscription-manager clean");
 		res = sys.rhsm_registerForce(_act_key[0]);
 		Assert.assertTrue(res.getExitCode().intValue()==0, "exit(0) - rhsm register");
-		res = sys.subscribe(_poolRhel);
+		res = sys.subscribe(_poolRhel2);
+		Assert.assertTrue(res.getExitCode()==0, "Check - exit code");
+		res = sys.rhsm_identity();
+		_sys_act_key_ID[0] = KatelloUtils.grepCLIOutput("Current identity is", res.getStdout());
+		res = sys.list();
+		Assert.assertTrue(res.getExitCode()==0, "Check - exit code");
+		Assert.assertTrue(res.getStdout().contains(_sys_act_key[0]), "Check the system is listed");
 
 		// Setup the system which can be removed after upgrade
 		uid = KatelloUtils.getUniqueID();
@@ -757,38 +778,49 @@ public class ScenOrgs implements KatelloConstants {
 		res = org.subscriptions();
 		Assert.assertTrue(res.getExitCode().intValue()==0, "exit(0) - org subscriptions");
 		// getting poolid could vary - might be need to make switch case here for different versions...
-		_poolRhel = KatelloUtils.grepCLIOutput("ID", KatelloCliTestBase.sgetOutput(res));
-		if (_poolRhel == null || _poolRhel.isEmpty()) {
-			_poolRhel = KatelloUtils.grepCLIOutput("Id", KatelloCliTestBase.sgetOutput(res));
+		_poolRhel3 = KatelloUtils.grepCLIOutput("ID", KatelloCliTestBase.sgetOutput(res));
+		if (_poolRhel3 == null || _poolRhel3.isEmpty()) {
+			_poolRhel3 = KatelloUtils.grepCLIOutput("Id", KatelloCliTestBase.sgetOutput(res));
 		}
 
 		sys = new KatelloSystem(null, _sys_act_key[1], _org_act_key[1], _env_act_key[1]);
 		sys.runOn(SetupServers.client_name2);
+		KatelloUtils.sshOnClient(SetupServers.client_name2, "subscription-manager clean");
 		res = sys.rhsm_registerForce(_act_key[1]);
 		Assert.assertTrue(res.getExitCode().intValue()==0, "exit(0) - rhsm register");
-		res = sys.subscribe(_poolRhel);
-
+		res = sys.subscribe(_poolRhel3);
+		Assert.assertTrue(res.getExitCode()==0, "Check - exit code");
+		res = sys.rhsm_identity();
+		_sys_act_key_ID[1] = KatelloUtils.grepCLIOutput("Current identity is", res.getStdout());
+		res = sys.list();
+		Assert.assertTrue(res.getExitCode()==0, "Check - exit code");
+		Assert.assertTrue(res.getStdout().contains(_sys_act_key[1]), "Check the system is listed");
 	}
 
 	@Test(description="verify the existence of scenarios performed on activation keys", 
 			dependsOnGroups={TNG_PRE_UPGRADE, TNG_UPGRADE}, 
 			groups={TNG_POST_UPGRADE})
 	public void checkActKeyOperationsSurvived(){
-
+		// check that system survived the upgrade
+		KatelloSystem sys = new KatelloSystem(null, _sys_act_key[0], _org_act_key[0], null);
+		SSHCommandResult res = sys.list();
+		Assert.assertTrue(res.getExitCode()==0, "Check - exit code");
+		Assert.assertTrue(res.getStdout().contains(_sys_act_key[0]), "Check the system is listed");
+		
 		//Delete the activation keys and check the system is still registered after upgrade
 
 		KatelloActivationKey key = new KatelloActivationKey(null, 
-				_org_act_key[0], _env_act_key[0], _act_key[0], null, null);
-		SSHCommandResult res = key.delete();
+				_org_act_key[0], null, _act_key[0], null, null);
+		res = key.delete();
 		Assert.assertTrue(res.getExitCode()==0, "Check - exit code");
 
-		KatelloSystem sys = new KatelloSystem(null, _sys_act_key[0], _org_act_key[0], null);
 		res = sys.list();
 		Assert.assertTrue(res.getExitCode()==0, "Check - exit code");
 		Assert.assertTrue(res.getStdout().contains(_sys_act_key[0]), "Check the system is still registered");
 
 		//Remove the system after upgrade
 		sys = new KatelloSystem(null, _sys_act_key[1], _org_act_key[1], null);
+		sys.setUuid(_sys_act_key_ID[1]);
 		res = sys.unregister();
 		Assert.assertTrue(res.getExitCode()==0, "Check - exit code");
 		Assert.assertFalse(res.getStdout().contains(_sys_act_key[1]), "System removed succesfully");
@@ -1083,6 +1115,7 @@ public class ScenOrgs implements KatelloConstants {
 		
 		sys = new KatelloSystem(null, _newsystem, _org, null);
 		sys.runOn(SetupServers.client_name2);
+		KatelloUtils.sshOnClient(SetupServers.client_name2, "subscription-manager clean");
 		res = sys.rhsm_registerForce(_akey);
 		Assert.assertTrue(res.getExitCode().intValue()==0, "exit(0) - rhsm register (activationkey)");
 		
