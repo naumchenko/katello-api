@@ -750,6 +750,7 @@ public class ScenOrgs implements KatelloConstants {
 		Assert.assertTrue(res.getExitCode()==0, "Check - exit code");
 		res = sys.rhsm_identity();
 		_sys_act_key_ID[0] = KatelloUtils.grepCLIOutput("Current identity is", res.getStdout());
+		sys.runOn(null);
 		res = sys.list();
 		Assert.assertTrue(res.getExitCode()==0, "Check - exit code");
 		Assert.assertTrue(res.getStdout().contains(_sys_act_key[0]), "Check the system is listed");
@@ -797,6 +798,7 @@ public class ScenOrgs implements KatelloConstants {
 		Assert.assertTrue(res.getExitCode()==0, "Check - exit code");
 		res = sys.rhsm_identity();
 		_sys_act_key_ID[1] = KatelloUtils.grepCLIOutput("Current identity is", res.getStdout());
+		sys.runOn(null);
 		res = sys.list();
 		Assert.assertTrue(res.getExitCode()==0, "Check - exit code");
 		Assert.assertTrue(res.getStdout().contains(_sys_act_key[1]), "Check the system is listed");
