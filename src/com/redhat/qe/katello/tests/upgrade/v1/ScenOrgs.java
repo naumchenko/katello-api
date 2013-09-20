@@ -224,7 +224,6 @@ public class ScenOrgs implements KatelloConstants {
 		sys.runOn(SetupServers.client_name);
 		KatelloUtils.sshOnClient(SetupServers.client_name, "subscription-manager clean");
 		res = sys.rhsm_registerForce();
-		KatelloUtils.sshOnClient(SetupServers.client_name, "subscription-manager clean");
 		Assert.assertTrue(res.getExitCode().intValue()==0, "exit(0) - rhsm register");
 		res = sys.rhsm_identity();
 		String uuid1 = KatelloUtils.grepCLIOutput("Current identity is", res.getStdout());
@@ -275,6 +274,7 @@ public class ScenOrgs implements KatelloConstants {
 	}
 	
 	@Test(description="Multiple Orgs - Delete some of them", 
+			dependsOnMethods={"init"},
 			groups={TNG_PRE_UPGRADE})
 	public void addMultipleOrgs(){
 		String uid = KatelloUtils.getUniqueID(); 
@@ -333,7 +333,8 @@ public class ScenOrgs implements KatelloConstants {
 		Assert.assertTrue(res.getExitCode()==0, "Check - exit code (org delete)");		
 	}
 
-	@Test(description="Multiple Users - Delete some of them", 
+	@Test(description="Multiple Users - Delete some of them",
+			dependsOnMethods={"init"},
 			groups={TNG_PRE_UPGRADE})
 	public void addMultipleUsers(){ 
 		KatelloUser user = new KatelloUser(null, _multuser[0], 
@@ -404,6 +405,7 @@ public class ScenOrgs implements KatelloConstants {
 	}
 
 	@Test(description="Multiple UserRole - Delete some of them", 
+			dependsOnMethods={"init"},
 			groups={TNG_PRE_UPGRADE})
 	public void addMultipleUserRole(){
 		String uid = KatelloUtils.getUniqueID(); 
@@ -481,6 +483,7 @@ public class ScenOrgs implements KatelloConstants {
 	}
 
 	@Test(description="Multiple Permission - Delete some of them", 
+			dependsOnMethods={"init"},
 			groups={TNG_PRE_UPGRADE})
 	public void addMultiplePermissions(){
 
@@ -559,6 +562,7 @@ public class ScenOrgs implements KatelloConstants {
 	}
 
 	@Test(description="Create a Org Add default info - Check the existence after upgrade", 
+			dependsOnMethods={"init"},
 			groups={TNG_PRE_UPGRADE})
 	public void addDefaultOrgInfo(){
 		String uid = KatelloUtils.getUniqueID();
@@ -643,6 +647,7 @@ public class ScenOrgs implements KatelloConstants {
 	}
 
 	@Test(description="Add user default Org,Assign user role - Perform operations before upgrade", 
+			dependsOnMethods={"init"},
 			groups={TNG_PRE_UPGRADE})
 	public void addUserDefaultOrg(){
 		String uid = KatelloUtils.getUniqueID();
@@ -741,7 +746,7 @@ public class ScenOrgs implements KatelloConstants {
 		KatelloUtils.sshOnClient(SetupServers.client_name, "subscription-manager clean");
 		res = sys.rhsm_registerForce(_act_key[0]);
 		Assert.assertTrue(res.getExitCode().intValue()==0, "exit(0) - rhsm register");
-		res = sys.subscribe(_poolRhel2);
+		res = sys.rhsm_subscribe(_poolRhel2);
 		Assert.assertTrue(res.getExitCode()==0, "Check - exit code");
 		res = sys.rhsm_identity();
 		_sys_act_key_ID[0] = KatelloUtils.grepCLIOutput("Current identity is", res.getStdout());
@@ -788,7 +793,7 @@ public class ScenOrgs implements KatelloConstants {
 		KatelloUtils.sshOnClient(SetupServers.client_name2, "subscription-manager clean");
 		res = sys.rhsm_registerForce(_act_key[1]);
 		Assert.assertTrue(res.getExitCode().intValue()==0, "exit(0) - rhsm register");
-		res = sys.subscribe(_poolRhel3);
+		res = sys.rhsm_subscribe(_poolRhel3);
 		Assert.assertTrue(res.getExitCode()==0, "Check - exit code");
 		res = sys.rhsm_identity();
 		_sys_act_key_ID[1] = KatelloUtils.grepCLIOutput("Current identity is", res.getStdout());
