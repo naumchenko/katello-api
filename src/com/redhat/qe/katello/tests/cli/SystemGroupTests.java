@@ -16,10 +16,11 @@ import com.redhat.qe.katello.base.obj.KatelloEnvironment;
 import com.redhat.qe.katello.base.obj.KatelloOrg;
 import com.redhat.qe.katello.base.obj.KatelloSystem;
 import com.redhat.qe.katello.base.obj.KatelloSystemGroup;
+import com.redhat.qe.katello.base.tngext.TngPriority;
 import com.redhat.qe.katello.common.KatelloUtils;
 import com.redhat.qe.katello.common.TngRunGroups;
 import com.redhat.qe.tools.SSHCommandResult;
-
+@TngPriority(2)
 @Test(groups={TngRunGroups.TNG_KATELLO_System_Groups, "cli-SystemGroupTests"})
 public class SystemGroupTests extends KatelloCliTestBase{	
 	protected static Logger log = Logger.getLogger(SystemGroupTests.class.getName());
@@ -193,7 +194,7 @@ public class SystemGroupTests extends KatelloCliTestBase{
 	@Test(description = "Attempt to remove a system from the systm group more than once", groups={"cli-systemgroup", "cfse-cli", "headpin-cli"}, dependsOnMethods={"test_removeSystemFromSystemGroup"})
 	public void test_removeSystemMoreThanOnce() {
 		// Add a system to system group
-		KatelloSystem sys = addSystemToSystemGroup();
+		addSystemToSystemGroup();
 		KatelloSystemGroup systemGroup = new KatelloSystemGroup(this.cli_worker, systemGroupName, orgName);
 		// remove the system
 		exec_result = systemGroup.remove_systems(system_uuid);
