@@ -49,6 +49,10 @@ public class SetupServers extends KatelloCliTestBase {
 		if (isDeltacloud) {
 			if (!Boolean.parseBoolean(System.getProperty("deltacloud.keepserver", "false"))) {
 				KatelloUtils.destroyDeltaCloudMachine(server);
+			} else {
+				String filename = System.getProperty("user.dir")+"/"+System.getProperty("jenkins.build.id","null")+".properties";		
+				String sout = "SAM_SERVER_HOSTNAME="+server_name+"\\\\SAM_CLIENT_HOSTNAME="+server_name;
+				KatelloUtils.run_local("echo -en \""+sout+"\" > "+filename);
 			}
 			KatelloUtils.destroyDeltaCloudMachine(client);
 			KatelloUtils.destroyDeltaCloudMachine(client2);
