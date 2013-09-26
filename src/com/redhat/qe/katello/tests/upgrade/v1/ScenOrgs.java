@@ -775,10 +775,10 @@ public class ScenOrgs implements KatelloConstants {
 		res = key.create();
 		Assert.assertTrue(res.getExitCode()==0, "Check - exit code");
 
-		KatelloUtils.scpOnClient(null, "data/manifest.zip", "/tmp");
+		KatelloUtils.scpOnClient(null, "data/manifest-sam-1.2.zip", "/tmp");
 
 		rh = new KatelloProvider(null, KatelloProvider.PROVIDER_REDHAT, _org_act_key[1], null, null);
-		res = rh.import_manifest("/tmp/manifest.zip", null);
+		res = rh.import_manifest("/tmp/manifest-sam-1.2.zip", null);
 		Assert.assertTrue(res.getExitCode().intValue()==0, "exit(0) - provider import_manifest");
 		org = new KatelloOrg(null, _org_act_key[1], null);
 		res = org.subscriptions();
