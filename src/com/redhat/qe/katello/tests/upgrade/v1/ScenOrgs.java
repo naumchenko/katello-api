@@ -523,15 +523,15 @@ public class ScenOrgs implements KatelloConstants {
 		res = org.cli_create();
 		Assert.assertTrue(res.getExitCode()==0, "Check - exit code");
 		
-		user.runAs(user);
-		res = user.update_defaultOrg(_admin_org);
-		Assert.assertTrue(res.getExitCode()==0, "Check - exit code");
-		
 		KatelloEnvironment env = new KatelloEnvironment(null, _admin_env, null, _admin_org, KatelloEnvironment.LIBRARY);
 		env.runAs(user);
 		res = env.cli_create();
 		Assert.assertTrue(res.getExitCode()==0, "Check - exit code");
 		
+		user.runAs(user);
+		res = user.update_defaultOrgEnv(_admin_org, _admin_env);
+		Assert.assertTrue(res.getExitCode()==0, "Check - exit code");
+				
 		KatelloActivationKey key = new KatelloActivationKey(null, 
 				_admin_org, _admin_env, _admin_key, null, null);
 		key.runAs(user);
@@ -913,7 +913,7 @@ public class ScenOrgs implements KatelloConstants {
 	}
 
 	@Test(description="Import Manifest in Org - Delete the manifest,and the org", 
-			groups={TNG_PRE_UPGRADE})
+			groups={TNG_PRE_UPGRADE}, dependsOnMethods={"init"})
 	public void deleteOrgManifest(){
 		KatelloUser user = new KatelloUser(null, _admin_user2,	KatelloUser.DEFAULT_USER_EMAIL, System.getProperty("katello.admin.password", KatelloUser.DEFAULT_ADMIN_PASS), false);
 		
