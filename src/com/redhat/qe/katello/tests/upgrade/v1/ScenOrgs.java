@@ -29,9 +29,11 @@ public class ScenOrgs implements KatelloConstants {
 	String _env_1;
 	String _env_2;
 	String _env_3;
+	String _admin_env;
 	String _perm_1;
 	String _perm_2;
 	String _perm_3;
+	String _admin_perm;
 	String _del_system;
 	String _del_system2;
 	String _system;
@@ -43,13 +45,17 @@ public class ScenOrgs implements KatelloConstants {
 	String _distributor_name;
 	String _distributor_name2;
 	String _org;
+	String _admin_org;
 	String _user;
+	String _admin_user;
+	String _admin_user2;
 	String _akey;
 	String _akey2;
 	String _akey3;
 	String _user_role;
 	String _user_role2;
 	String _user_role3;
+	String _admin_role;
 	String _neworg;
 	String _newuser;
 	String _newsystem;
@@ -58,6 +64,7 @@ public class ScenOrgs implements KatelloConstants {
 	String _poolRhel3;
 	String _keyname1;
 	String _keyname2;
+	String _admin_key;
 	String[] _act_key = new String[2];
 	String[] _org_act_key = new String[2];
 	String[] _env_act_key = new String[2];
@@ -85,8 +92,11 @@ public class ScenOrgs implements KatelloConstants {
 	public void init(){
 		String _uid = KatelloUtils.getUniqueID();
 		_org = "torg"+_uid;
+		_admin_org = "adminorg"+_uid;
 		_user = "tuser"+_uid;
 		_newuser = "newuser" + _uid;
+		_admin_user = "adminuser1" + _uid;
+		_admin_user2 = "adminuser2" + _uid;
 		_multuser[0] = "mult-user0-"+ _uid;
 		_multuser[1] = "mult-user1-"+ _uid;
 		_multuser[2] = "mult-user2-"+ _uid;
@@ -97,6 +107,8 @@ public class ScenOrgs implements KatelloConstants {
 		if ("posix".equals(ldap_type)) {
 			_user = "gszasz";
 			_newuser = "sloranz";
+			_admin_user = "apagac";
+			_admin_user2 = "kwhitney";
 			_multuser[0] = "jlaska";
 			_multuser[1] = "imcleod";
 			_multuser[2] = "psharma";
@@ -113,16 +125,20 @@ public class ScenOrgs implements KatelloConstants {
 		_akey3 = "akey3"+_uid;
 		_keyname1 = "testkey1"+_uid;
 		_keyname2 = "testkey2"+_uid;
+		_admin_key = "adminkey"+_uid;
 		_neworg = "neworg"+_uid;
 		_user_role = "role" + _uid;
 		_user_role2 = "role2" + _uid;
 		_user_role3 = "role3" + _uid;
+		_admin_role = "adminrole" + _uid;
 		_env_1 = "Dev_" + _uid;
 		_env_2 = "QA_" + _uid;
 		_env_3 = "GA_" + _uid;
+		_admin_env = "testenv" + _uid;
 		_perm_1 = "Perm1_" + _uid;
 		_perm_2 = "Perm2_" + _uid;
 		_perm_3 = "Perm3_" + _uid;
+		_admin_perm = "perm" + _uid;
 		_del_system = "deletable" + _uid;
 		_del_system2 = "deletable2" + _uid;
 		_system = "Dakar_" + _uid;
@@ -161,6 +177,14 @@ public class ScenOrgs implements KatelloConstants {
 				KatelloUser.DEFAULT_USER_EMAIL, System.getProperty("katello.admin.password", KatelloUser.DEFAULT_ADMIN_PASS), false);
 		res = user.cli_create();
 		Assert.assertTrue(res.getExitCode()==0, "Check - exit code");
+		
+		user = new KatelloUser(null, _admin_user2, 
+				KatelloUser.DEFAULT_USER_EMAIL, System.getProperty("katello.admin.password", KatelloUser.DEFAULT_ADMIN_PASS), false);
+		res = user.cli_create();
+		Assert.assertTrue(res.getExitCode()==0, "Check - exit code");
+		res = user.assign_role(KatelloUserRole.ROLE_ADMINISTRATOR);
+		Assert.assertTrue(res.getExitCode()==0, "Check - exit code");
+		
 		
 		KatelloActivationKey key = new KatelloActivationKey(null, 
 				_org, _env_1, _akey, null, null);
@@ -482,6 +506,61 @@ public class ScenOrgs implements KatelloConstants {
 		Assert.assertFalse(res.getStdout().contains(_multuser_role[4]), "Role does not exist");
 	}
 
+	@Test(description="Create admin user, perform some actions and delete user",
+			dependsOnMethods={"init"},
+			groups={TNG_PRE_UPGRADE})
+	public void deleteAdminUser(){ 
+		KatelloUser user = new KatelloUser(null, _admin_user, 
+				KatelloUser.DEFAULT_USER_EMAIL, System.getProperty("katello.admin.password", KatelloUser.DEFAULT_ADMIN_PASS), false);
+		SSHCommandResult res = user.cli_create();
+		Assert.assertTrue(res.getExitCode()==0, "Check - exit code");
+		
+		res = user.assign_role(KatelloUserRole.ROLE_ADMINISTRATOR);
+		Assert.assertTrue(res.getExitCode()==0, "Check - exit code");
+		
+		KatelloOrg org = new KatelloOrg(null, _admin_org, null);
+		org.runAs(user);
+		res = org.cli_create();
+		Assert.assertTrue(res.getExitCode()==0, "Check - exit code");
+		
+		user.runAs(user);
+		res = user.update_defaultOrg(_admin_org);
+		Assert.assertTrue(res.getExitCode()==0, "Check - exit code");
+		
+		KatelloEnvironment env = new KatelloEnvironment(null, _admin_env, null, _admin_org, KatelloEnvironment.LIBRARY);
+		env.runAs(user);
+		res = env.cli_create();
+		Assert.assertTrue(res.getExitCode()==0, "Check - exit code");
+		
+		KatelloActivationKey key = new KatelloActivationKey(null, 
+				_admin_org, _admin_env, _admin_key, null, null);
+		key.runAs(user);
+		res = key.create();
+		Assert.assertTrue(res.getExitCode()==0, "Check - exit code");
+		
+		
+		KatelloUtils.scpOnClient(null, "data/manifest-multy.zip", "/tmp");
+		KatelloProvider rh = new KatelloProvider(null, KatelloProvider.PROVIDER_REDHAT, _admin_org, null, null);
+		rh.runAs(user);
+		res = rh.import_manifest("/tmp/manifest-multy.zip", null);
+		Assert.assertTrue(res.getExitCode().intValue()==0, "exit(0) - provider import_manifest");
+
+		KatelloUserRole user_role = new KatelloUserRole(null, _admin_role, "Activation Keys");
+		user_role.runAs(user);
+		res = user_role.create();
+		Assert.assertTrue(res.getExitCode().intValue()==0, "Check - return code (user role create)");	
+		_init_role_count++;
+		
+		KatelloPermission perm = new KatelloPermission(null, _admin_perm, _admin_org, "activation_keys", null, "manage_all", _admin_role);
+		perm.runAs(user);
+		res = perm.create();
+		Assert.assertTrue(res.getExitCode()==0, "Check - exit code (permition create)");
+		
+		user.runAs(null);
+		res = user.delete();
+		Assert.assertTrue(res.getExitCode()==0, "Check - exit code - user delete");
+	}
+	
 	@Test(description="Multiple Permission - Delete some of them", 
 			dependsOnMethods={"init"},
 			groups={TNG_PRE_UPGRADE})
@@ -836,15 +915,19 @@ public class ScenOrgs implements KatelloConstants {
 	@Test(description="Import Manifest in Org - Delete the manifest,and the org", 
 			groups={TNG_PRE_UPGRADE})
 	public void deleteOrgManifest(){
+		KatelloUser user = new KatelloUser(null, _admin_user2,	KatelloUser.DEFAULT_USER_EMAIL, System.getProperty("katello.admin.password", KatelloUser.DEFAULT_ADMIN_PASS), false);
+		
 		//create org, import manifest, register a client
 		String uid = KatelloUtils.getUniqueID(); 
 		_del_org[0] = "del-org0-"+ uid;
 		KatelloOrg org = new KatelloOrg(null,_del_org[0], null);
+		org.runAs(user);
 		SSHCommandResult res = org.cli_create();
 		Assert.assertTrue(res.getExitCode()==0, "Check - exit code");
 		KatelloUtils.scpOnClient(null, "data/"+KatelloProvider.MANIFEST_2SUBSCRIPTIONS, "/tmp");
 
 		KatelloProvider rh = new KatelloProvider(null, KatelloProvider.PROVIDER_REDHAT, _del_org[0], null, null);
+		rh.runAs(user);
 		res = rh.import_manifest("/tmp/"+KatelloProvider.MANIFEST_2SUBSCRIPTIONS, null);
 		Assert.assertTrue(res.getExitCode().intValue()==0, "exit(0) - provider import_manifest");
 		res = org.subscriptions();
@@ -858,6 +941,7 @@ public class ScenOrgs implements KatelloConstants {
 		String system = "delsystem" + uid;
 		String env_name = "env" + uid;
 		KatelloEnvironment env = new KatelloEnvironment(null, env_name, null, _del_org[0], KatelloEnvironment.LIBRARY);
+		env.runAs(user);
 		res = env.cli_create();
 		Assert.assertTrue(res.getExitCode().intValue()==0, "exit(0) - env create");
 		
@@ -897,20 +981,24 @@ public class ScenOrgs implements KatelloConstants {
 			dependsOnGroups={TNG_PRE_UPGRADE, TNG_UPGRADE}, 
 			groups={TNG_POST_UPGRADE})
 	public void checkOrgsManifestSurvived(){
-
+		KatelloUser user = new KatelloUser(null, _admin_user2,	KatelloUser.DEFAULT_USER_EMAIL, System.getProperty("katello.admin.password", KatelloUser.DEFAULT_ADMIN_PASS), false);
+		
 		// check org with manifest is survived, delete org
 		KatelloOrg org = new KatelloOrg(null, _del_org[0], null);
+		org.runAs(user);
 		SSHCommandResult res = org.cli_info();
 		Assert.assertTrue(res.getExitCode()==0, "Check - exit code (org info)");
 		res = org.subscriptions();
 		Assert.assertTrue(res.getExitCode().intValue()==0, "exit(0) - org subscriptions");
 		res = org.delete();
-		Assert.assertTrue(res.getExitCode().intValue()==0, "exit(0) - org delete");
-				
+		Assert.assertTrue(res.getExitCode().intValue()==0, "exit(0) - org delete");		
+		
 		// re-import manifest in other org, delete the org
 		KatelloUtils.scpOnClient(null, "data/"+KatelloProvider.MANIFEST_2SUBSCRIPTIONS, "/tmp");
 		org = new KatelloOrg(null,_del_org[2], null);
+		org.runAs(user);
 		KatelloProvider rh = new KatelloProvider(null, KatelloProvider.PROVIDER_REDHAT, _del_org[2], null, null);
+		rh.runAs(user);
 		res = rh.import_manifest("/tmp/"+KatelloProvider.MANIFEST_2SUBSCRIPTIONS, null);
 		Assert.assertTrue(res.getExitCode().intValue()==0, "exit(0) - provider import_manifest");
 		res = org.subscriptions();
@@ -920,6 +1008,7 @@ public class ScenOrgs implements KatelloConstants {
 		
 		// Check the non-existence of deleted Org,manifest
 		org = new KatelloOrg(null, _del_org[1], null);
+		org.runAs(user);
 		res = org.cli_info();
 		Assert.assertTrue(res.getExitCode()==148, "Check - exit code (org info)");
 
@@ -927,6 +1016,7 @@ public class ScenOrgs implements KatelloConstants {
 		res = org.cli_create();
 		Assert.assertTrue(res.getExitCode()==0, "Check - exit code");
 		rh = new KatelloProvider(null, KatelloProvider.PROVIDER_REDHAT, _del_org[1], null, null);
+		rh.runAs(user);
 		res = rh.import_manifest("/tmp/"+KatelloProvider.MANIFEST_SAM_MATRIX, null);
 		Assert.assertTrue(res.getExitCode().intValue()==0, "exit(0) - provider import_manifest");
 		res = org.subscriptions();
@@ -939,10 +1029,14 @@ public class ScenOrgs implements KatelloConstants {
 		res = org.cli_create();
 		Assert.assertTrue(res.getExitCode()==0, "Check - exit code");
 		rh = new KatelloProvider(null, KatelloProvider.PROVIDER_REDHAT, _del_org[1], null, null);
+		rh.runAs(user);
 		res = rh.import_manifest("/tmp/"+KatelloProvider.MANIFEST_SAM_MATRIX, null);
 		Assert.assertTrue(res.getExitCode().intValue()==0, "exit(0) - provider import_manifest");
 		res = org.subscriptions();
 		Assert.assertTrue(res.getExitCode().intValue()==0, "exit(0) - org subscriptions");
+		
+		res = user.delete();
+		Assert.assertTrue(res.getExitCode().intValue()==0, "exit(0) - user delete");
 	}
 
 	@Test(description="verify orgs survived the upgrade", 
