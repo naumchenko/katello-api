@@ -18,3 +18,4 @@ githash
 .gradle
 build
 data/
+scripts/
