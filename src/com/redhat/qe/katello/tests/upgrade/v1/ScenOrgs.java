@@ -68,7 +68,7 @@ public class ScenOrgs implements KatelloConstants {
 	String[] _permorg = new String[3];
 	String[] _permrole = new String[3];
 	String[] _perm = new String[3];
-	String[] _del_org= new String[2];
+	String[] _del_org= new String[3];
 	String[] _multorg =  new String[5];
 	String[] _multuser = new String[5];
 	String[] _multuser_role = new String[5];
@@ -836,6 +836,7 @@ public class ScenOrgs implements KatelloConstants {
 	@Test(description="Import Manifest in Org - Delete the manifest,and the org", 
 			groups={TNG_PRE_UPGRADE})
 	public void deleteOrgManifest(){
+		//create org, import manifest, register a client
 		String uid = KatelloUtils.getUniqueID(); 
 		_del_org[0] = "del-org0-"+ uid;
 		KatelloOrg org = new KatelloOrg(null,_del_org[0], null);
@@ -848,7 +849,28 @@ public class ScenOrgs implements KatelloConstants {
 		Assert.assertTrue(res.getExitCode().intValue()==0, "exit(0) - provider import_manifest");
 		res = org.subscriptions();
 		Assert.assertTrue(res.getExitCode().intValue()==0, "exit(0) - org subscriptions");
-
+		
+		// getting poolid could vary - might be need to make switch case here for different versions...
+		String pool = KatelloUtils.grepCLIOutput("ID", KatelloCliTestBase.sgetOutput(res));
+		if (pool == null || pool.isEmpty()) {
+			pool = KatelloUtils.grepCLIOutput("Id", KatelloCliTestBase.sgetOutput(res));
+		}
+		String system = "delsystem" + uid;
+		String env_name = "env" + uid;
+		KatelloEnvironment env = new KatelloEnvironment(null, env_name, null, _del_org[0], KatelloEnvironment.LIBRARY);
+		res = env.cli_create();
+		Assert.assertTrue(res.getExitCode().intValue()==0, "exit(0) - env create");
+		
+		KatelloSystem sys = new KatelloSystem(null, system, _del_org[0], env_name);
+		sys.runOn(SetupServers.client_name3);
+		KatelloUtils.sshOnClient(SetupServers.client_name3, "subscription-manager clean");
+		res = sys.rhsm_registerForce();
+		Assert.assertTrue(res.getExitCode().intValue()==0, "exit(0) - rhsm register");
+		res = sys.rhsm_subscribe(pool);
+		Assert.assertTrue(res.getExitCode().intValue()==0, "exit(0) - rhsm subscribe");
+		
+		
+		// create org, import manifest, delete org
 		_del_org[1] = "del-org1-"+ uid;
 		org = new KatelloOrg(null,_del_org[1], null);
 		res = org.cli_create();
@@ -863,7 +885,12 @@ public class ScenOrgs implements KatelloConstants {
 		res = rh.delete_manifest();
 		Assert.assertTrue(res.getExitCode().intValue()==0, "exit(0) - provider import_manifest");
 		res = org.delete();
-		Assert.assertTrue(res.getExitCode()==0, "Check - exit code");	
+		Assert.assertTrue(res.getExitCode()==0, "Check - exit code");
+		
+		_del_org[2] = "del-org2-"+ uid;
+		org = new KatelloOrg(null,_del_org[2], null);
+		res = org.cli_create();
+		Assert.assertTrue(res.getExitCode()==0, "Check - exit code");
 	}
 
 	@Test(description="verify the existence of manifest org, re-create deleted org and re-import manifest", 
@@ -871,12 +898,26 @@ public class ScenOrgs implements KatelloConstants {
 			groups={TNG_POST_UPGRADE})
 	public void checkOrgsManifestSurvived(){
 
+		// check org with manifest is survived, delete org
 		KatelloOrg org = new KatelloOrg(null, _del_org[0], null);
 		SSHCommandResult res = org.cli_info();
 		Assert.assertTrue(res.getExitCode()==0, "Check - exit code (org info)");
 		res = org.subscriptions();
 		Assert.assertTrue(res.getExitCode().intValue()==0, "exit(0) - org subscriptions");
-
+		res = org.delete();
+		Assert.assertTrue(res.getExitCode().intValue()==0, "exit(0) - org delete");
+				
+		// re-import manifest in other org, delete the org
+		KatelloUtils.scpOnClient(null, "data/"+KatelloProvider.MANIFEST_2SUBSCRIPTIONS, "/tmp");
+		org = new KatelloOrg(null,_del_org[2], null);
+		KatelloProvider rh = new KatelloProvider(null, KatelloProvider.PROVIDER_REDHAT, _del_org[2], null, null);
+		res = rh.import_manifest("/tmp/"+KatelloProvider.MANIFEST_2SUBSCRIPTIONS, null);
+		Assert.assertTrue(res.getExitCode().intValue()==0, "exit(0) - provider import_manifest");
+		res = org.subscriptions();
+		Assert.assertTrue(res.getExitCode().intValue()==0, "exit(0) - org subscriptions");
+		res = org.delete();
+		Assert.assertTrue(res.getExitCode().intValue()==0, "exit(0) - org delete");
+		
 		// Check the non-existence of deleted Org,manifest
 		org = new KatelloOrg(null, _del_org[1], null);
 		res = org.cli_info();
@@ -885,7 +926,7 @@ public class ScenOrgs implements KatelloConstants {
 		//Reimport the deleted manifest to check it works
 		res = org.cli_create();
 		Assert.assertTrue(res.getExitCode()==0, "Check - exit code");
-		KatelloProvider rh = new KatelloProvider(null, KatelloProvider.PROVIDER_REDHAT, _del_org[1], null, null);
+		rh = new KatelloProvider(null, KatelloProvider.PROVIDER_REDHAT, _del_org[1], null, null);
 		res = rh.import_manifest("/tmp/"+KatelloProvider.MANIFEST_SAM_MATRIX, null);
 		Assert.assertTrue(res.getExitCode().intValue()==0, "exit(0) - provider import_manifest");
 		res = org.subscriptions();
@@ -1193,8 +1234,10 @@ public class ScenOrgs implements KatelloConstants {
 	@AfterClass(description="Deleted created orgs from upgrade scenarios which contains manifests",
 			alwaysRun=true)
 	public void tearDown() {
-		new KatelloOrg(null, _org, null).delete();
+		SSHCommandResult res = new KatelloOrg(null, _org, null).delete();
+		Assert.assertTrue(res.getExitCode().intValue() == 0, "Check - return code of main org delete");
 		new KatelloOrg(null, _del_org[0], null).delete();
 		new KatelloOrg(null, _del_org[1], null).delete();
+		new KatelloOrg(null, _del_org[2], null).delete();
 	}
 }
