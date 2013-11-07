@@ -57,7 +57,7 @@ public class KatelloUser extends _KatelloObject{
 	public String password;
 	public boolean disabled;
 	public String orgname="";
-	public String envname = "";
+//	public String envname = "";
 	private Long id;
 	public String locale = "";
 	
@@ -84,7 +84,7 @@ public class KatelloUser extends _KatelloObject{
 	public KatelloUser(KatelloCliWorker kcr, String pName,String pEmail,String pPassword,boolean pDisabled,String pOrgname,String pEnvname){
 		this(kcr, pName,pEmail, pPassword, pDisabled);
 		this.orgname = pOrgname;
-		this.envname = pEnvname;
+//		this.envname = pEnvname;
 	}
 
 	public KatelloUser(KatelloCliWorker kcr, String pName,String pEmail,String pPassword,boolean pDisabled,String pOrgname,String pEnvname, Long id){
@@ -129,8 +129,6 @@ public class KatelloUser extends _KatelloObject{
 			opts.add(new Attribute("disabled", "true"));
 		if(!(orgname.isEmpty()))
 			opts.add(new Attribute("default_organization",orgname));
-		if(!(envname.isEmpty()))
-			opts.add(new Attribute("default_environment",envname));
 		if(!(locale.isEmpty()))
 			opts.add(new Attribute("default_locale",locale));
 		return run(CMD_CREATE);
@@ -173,18 +171,17 @@ public class KatelloUser extends _KatelloObject{
 		return run(CMD_DELETE_USER);
 	}
 	
-	public SSHCommandResult update_defaultOrgEnv(String org, String env){
+	public SSHCommandResult update_defaultOrg(String org){
 		opts.clear();
 		opts.add(new Attribute("username", username));
 		opts.add(new Attribute("default_organization", org));
-		opts.add(new Attribute("default_environment", env));
 		return run(CMD_UPDATE);
 	}
 
 	public SSHCommandResult update_noDefaultOrg() {
 		opts.clear();
 		opts.add(new Attribute("username", username));
-		return run(CMD_UPDATE+" --no_default_environment");
+		return run(CMD_UPDATE+" --no_default_organization");
 	}
 	
 	public SSHCommandResult update_userCredentials(String password, String email, boolean isDisabled){
@@ -216,12 +213,12 @@ public class KatelloUser extends _KatelloObject{
 		// asserts: user list
 		res = cli_list();
 		Assert.assertTrue(res.getExitCode().intValue()==0, "Check - return code ("+CLI_CMD_LIST+")");
-		String REGEXP_LIST = ".*ID\\s*:\\s*\\d+.*Username\\s*:\\s*%s.*Email\\s*:\\s*%s.*Disabled\\s*:\\s*False.*Default Organization\\s*:\\s*%s.*Default Environment\\s*:\\s*%s.*";
+		String REGEXP_LIST = ".*ID\\s*:\\s*\\d+.*Username\\s*:\\s*%s.*Email\\s*:\\s*%s.*Disabled\\s*:\\s*False.*Default Organization\\s*:\\s*%s.*";
 		if(this.disabled)
-			REGEXP_LIST = ".*ID\\s*:\\s*\\d+.*Username\\s*:\\s*%s.*Email\\s*:\\s*%s.*Disabled\\s*:\\s*True.*Default Organization\\s*:\\s*%s.*Default Environment\\s*:\\s*%s.*";
+			REGEXP_LIST = ".*ID\\s*:\\s*\\d+.*Username\\s*:\\s*%s.*Email\\s*:\\s*%s.*Disabled\\s*:\\s*True.*Default Organization\\s*:\\s*%s.*";
 
 		String match_info = String.format(REGEXP_LIST,
-				this.username,this.email, this.orgname != null ? this.orgname : "None", this.envname != null ? this.envname : "None").replaceAll("\"", "");
+				this.username,this.email, this.orgname != null ? this.orgname : "None").replaceAll("\"", "");
 
 		Assert.assertTrue(KatelloCliTestBase.sgetOutput(res).replaceAll("\n", "").matches(match_info), 
 				String.format("User [%s] should be found in the list",this.username));
@@ -229,11 +226,11 @@ public class KatelloUser extends _KatelloObject{
 		// asserts: user info
 		res = cli_info();
 		Assert.assertTrue(res.getExitCode().intValue()==0, "Check - return code ("+CLI_CMD_INFO+")");
-		String REGEXP_INFO = ".*ID\\s*:\\s*\\d+.*Username\\s*:\\s*%s.*Email\\s*:\\s*%s.*Disabled\\s*:\\s*False.*Default Organization\\s*:\\s*%s.*Default Environment\\s*:\\s*%s.*";
+		String REGEXP_INFO = ".*ID\\s*:\\s*\\d+.*Username\\s*:\\s*%s.*Email\\s*:\\s*%s.*Disabled\\s*:\\s*False.*Default Organization\\s*:\\s*%s.*";
 		if(this.disabled)
-			REGEXP_INFO =  ".*ID\\s*:\\s*\\d+.*Username\\s*:\\s*%s.*Email\\s*:\\s*%s.*Disabled\\s*:\\s*True.*Default Organization\\s*:\\s*%s.*Default Environment\\s*:\\s*%s.*";
+			REGEXP_INFO =  ".*ID\\s*:\\s*\\d+.*Username\\s*:\\s*%s.*Email\\s*:\\s*%s.*Disabled\\s*:\\s*True.*Default Organization\\s*:\\s*%s.*";
 		match_info = String.format(REGEXP_INFO,
-				this.username, this.email, this.orgname != null ? this.orgname : "None", this.envname != null ? this.envname : "None").replaceAll("\"", "");
+				this.username, this.email, this.orgname != null ? this.orgname : "None").replaceAll("\"", "");
 		Assert.assertTrue(KatelloCliTestBase.sgetOutput(res).replaceAll("\n", "").matches(match_info), 
 				String.format("User [%s] should contain correct info",this.username));			
 	}
