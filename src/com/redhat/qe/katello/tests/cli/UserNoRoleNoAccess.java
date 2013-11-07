@@ -1,9 +1,7 @@
 package com.redhat.qe.katello.tests.cli;
 
-import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-
 import com.redhat.qe.Assert;
 import com.redhat.qe.katello.base.KatelloCliTestBase;
 import com.redhat.qe.katello.base.obj.KatelloEnvironment;
@@ -87,9 +85,7 @@ public class UserNoRoleNoAccess extends KatelloCliTestBase {
 
 	  
 	@Test(description="check for users command", groups={"headpin-cli"})
-	public void test_User_Commands()
-	{
-		
+	public void test_User_Commands(){
 		user.runAs(user);       
 		res = user.cli_list();
 		Assert.assertTrue(res.getExitCode().intValue()==147, "Check - return code");
@@ -99,13 +95,10 @@ public class UserNoRoleNoAccess extends KatelloCliTestBase {
 		Assert.assertTrue(res.getExitCode().intValue()==147, "Check - return code");
 		res = user.delete();
 		Assert.assertTrue(res.getExitCode().intValue()==147, "Check - return code");
-
-	}
-	
+	}	
 	
 	@Test(description="check for users roles command", groups={"headpin-cli"})
-	public void test_UserRole_Commands()
-	{
+	public void test_UserRole_Commands(){
 		user_role.runAs(user);       
 		res = user_role.cli_list();
 		Assert.assertTrue(res.getExitCode().intValue()==147, "Check - return code");
@@ -115,10 +108,5 @@ public class UserNoRoleNoAccess extends KatelloCliTestBase {
 		Assert.assertTrue(res.getExitCode().intValue()==147, "Check - return code");
 		res = user_role.cli_delete();
 		Assert.assertTrue(res.getExitCode().intValue()==147, "Check - return code");
-	}
-	
-	@AfterClass(description="destroy", alwaysRun=true)
-	public void tearDown(){
-		
 	}
 }
