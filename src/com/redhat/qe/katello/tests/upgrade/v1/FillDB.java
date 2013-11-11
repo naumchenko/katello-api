@@ -177,7 +177,7 @@ public class FillDB implements KatelloConstants{
 		Assert.assertTrue(_description.equals(env.getDescription()), "stdout: environment.description");
 		Assert.assertTrue(_prior.equals(envNameTesting), "stdout: environment.prior");
 		
-		res = usrAdmin.update_defaultOrgEnv(orgName, envNameTesting);
+		res = usrAdmin.update_defaultOrg(orgName);
 		Assert.assertTrue(res.getExitCode().intValue() == 0, "exit: user.assignDefaultOrgEnv");
 	}
 	

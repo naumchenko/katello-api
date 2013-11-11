@@ -106,7 +106,7 @@ public class UserTests extends KatelloCliTestBase{
 		usr.asserts_create();
 		
 		//update default_org
-		res = usr.update_defaultOrgEnv(this.organization, this.env);
+		res = usr.update_defaultOrg(this.organization);
 		Assert.assertTrue(res.getExitCode().intValue()==0, "Check - return code ("+KatelloUser.CMD_UPDATE+")");
 		Assert.assertTrue(getOutput(res).contains(
 				String.format(KatelloUser.OUT_UPDATE, usr.getUsername())), "Check - return output string ("+KatelloUser.CMD_UPDATE+")");
@@ -127,8 +127,6 @@ public class UserTests extends KatelloCliTestBase{
 		Assert.assertTrue(defaultInfoStr.contains("False"), "Check - stdout contains updated disabled value");
 		defaultInfoStr = KatelloUtils.grepCLIOutput("Default Organization", getOutput(res));
 		Assert.assertTrue(defaultInfoStr.contains(this.organization), "Check - stdout contains updated default organization");
-		defaultInfoStr = KatelloUtils.grepCLIOutput("Default Environment", getOutput(res));
-		Assert.assertTrue(defaultInfoStr.contains(this.env), "Check - stdout contains updated default environment");
 	}
 
 	@Test(description = "List all users - admin should be there", groups={"headpin-cli"})
@@ -382,23 +380,6 @@ public class UserTests extends KatelloCliTestBase{
 		usr.asserts_create();
 	}
 
-	@Test(description="Create a user with default org and environment from other org, verify error", groups={"headpin-cli"})
-	public void test_createUserDefaultValuesWrong() {
-		SSHCommandResult res;
-		String uniqueID = KatelloUtils.getUniqueID();
-		String username = "user-" + uniqueID;
-		String userpass = "password";
-		String usermail = username + "@localhost";
-		KatelloUser usr = new KatelloUser(cli_worker, username, usermail, userpass, false,
-				this.organization, this.env2);
-		res = usr.cli_create();
-		Assert.assertTrue(res.getExitCode().intValue() == 65,"Check - return code (environment delete)");
-        Assert.assertTrue(getOutput(res).contains(
-				String.format(KatelloEnvironment.ERROR_INFO,env2,this.organization)), 
-				"Check - returned output string ("+KatelloUser.CMD_CREATE+")");	
-	}
-	
-	
 	@Test(description="access to cli calls by providing an empty password", groups={"headpin-cli"}, enabled=false) // TODO - try to find out why it fails on group running - TODO for gkhachik
 	public void test_getAccessWithEmptyPassword(){
 		KatelloUser userAdmin = new KatelloUser(cli_worker, System.getProperty("katello.admin.user"), 
@@ -565,13 +546,11 @@ public class UserTests extends KatelloCliTestBase{
 		exec_result = user.cli_info();
 		Assert.assertTrue(exec_result.getExitCode()==0, "Check exit code (user info)");
 		Assert.assertTrue(getOutput(exec_result).contains(base_org_name), "Check output (user info)");
-		Assert.assertTrue(getOutput(exec_result).contains(base_dev_env_name), "Check output (user info)");
 		exec_result = user.update_noDefaultOrg();
 		Assert.assertTrue(exec_result.getExitCode()==0, "Check exit code (user update)");
 		exec_result = user.cli_info();
 		Assert.assertTrue(exec_result.getExitCode()==0, "Check exit code (user info)");
 		Assert.assertFalse(getOutput(exec_result).contains(base_org_name), "Check output (user info)");
-		Assert.assertFalse(getOutput(exec_result).contains(base_dev_env_name), "Check output (user info)");
 	}
 
 	@Test(description="assign role which does not exist")
